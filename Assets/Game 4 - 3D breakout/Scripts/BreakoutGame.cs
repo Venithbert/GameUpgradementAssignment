@@ -1,10 +1,15 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
-public enum BreakoutGameState { playing, won, lost };
 
+
+
+public enum BreakoutGameState { playing, levelComplete, won, lost }
+
+
+
+// Requires LevelManager, ScoreManager, and PaddleHitCounter to be present in the scene.
 public class BreakoutGame : MonoBehaviour
 {
     public static BreakoutGame SP;
@@ -37,10 +42,20 @@ public class BreakoutGame : MonoBehaviour
     }
 
 
+
+
+
+
+
+
+
     void SpawnBall()
     {
-        Instantiate(ballPrefab, new Vector3(1.81f, 1.0f , 9.75f), Quaternion.identity);
+        Instantiate(ballPrefab, new Vector3(1.81f, 1.0f, 5.75f), Quaternion.identity);
     }
+
+
+
 
 
 
@@ -52,52 +67,27 @@ public class BreakoutGame : MonoBehaviour
         List<Vector3> positions = new List<Vector3>();
 
         for (int row = 0; row < rows; row++)
-        {
-            for (int column = 0; column < columns; column++)
-            {
-                Vector3 spawnPosition = firstBlockPosition + new Vector3(column * xSpacing, 0, row * zSpacing);
-                positions.Add(spawnPosition);
-            }
-        }
+            for (int col = 0; col < columns; col++)
+                positions.Add(firstBlockPosition + new Vector3(col * xSpacing, 0, row * zSpacing));
 
+        // Shuffle positions
         for (int i = 0; i < positions.Count; i++)
         {
-            int randomIndex = Random.Range(i, positions.Count);
-            Vector3 temp = positions[i];
-            positions[i] = positions[randomIndex];
-            positions[randomIndex] = temp;
+            int r = Random.Range(i, positions.Count);
+            Vector3 tmp = positions[i];
+            positions[i] = positions[r];
+            positions[r] = tmp;
         }
 
         totalBlocks = Mathf.Min(blocksToSpawn, positions.Count);
+        LevelConfig level = LevelManager.SP.CurrentLevel;
 
         for (int i = 0; i < totalBlocks; i++)
         {
-            Instantiate(blockPrefab, positions[i], Quaternion.identity);
+            GameObject block = Instantiate(blockPrefab, positions[i], Quaternion.identity).gameObject;
+            block.GetComponent<BlockHealth>().SetValue(level.GetRandomBlockValue());
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -106,23 +96,28 @@ public class BreakoutGame : MonoBehaviour
     void OnGUI()
     {
         GUILayout.Space(10);
-        GUILayout.Label("  Hit: " + blocksHit + "/" + totalBlocks);
+        GUILayout.Label("  Level: " + LevelManager.CurrentLevelNumber);
+        GUILayout.Label("  Score: " + ScoreManager.SP.CurrentScore + " / " + LevelManager.SP.CurrentLevel.requiredScore);
+        GUILayout.Label("  Hits Left: " + PaddleHitCounter.SP.HitsRemaining);
+        GUILayout.Label("  Blocks: " + blocksHit + " / " + totalBlocks);
 
-        if (gameState == BreakoutGameState.lost)
+        if (gameState == BreakoutGameState.levelComplete)
         {
-            GUILayout.Label("You Lost!");
-            if (GUILayout.Button("Try again"))
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            }
+            GUILayout.Label("Level Complete!");
+            if (GUILayout.Button("Next Level"))
+                LevelManager.SP.AdvanceLevel();
         }
         else if (gameState == BreakoutGameState.won)
         {
-            GUILayout.Label("You won!");
-            if (GUILayout.Button("Play again"))
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            }
+            GUILayout.Label("You Won!");
+            if (GUILayout.Button("Play Again"))
+                LevelManager.SP.RestartFromLevel1();
+        }
+        else if (gameState == BreakoutGameState.lost)
+        {
+            GUILayout.Label("You Lost!");
+            if (GUILayout.Button("Try Again"))
+                LevelManager.SP.RestartFromLevel1();
         }
     }
 
@@ -130,41 +125,50 @@ public class BreakoutGame : MonoBehaviour
 
 
 
+
+
+    // Called by Block when fully destroyed (value reaches 0)
     public void HitBlock()
     {
         blocksHit++;
-        
-        //For fun:
-        if (blocksHit%10 == 0) //Every 10th block will spawn a new ball
-        {
+
+        // Every 10 blocks: bonus ball
+        if (blocksHit % 10 == 0)
             SpawnBall();
-        }
-
-        
-        if (blocksHit >= totalBlocks)
-        {
-            WonGame();
-        }
     }
 
-    public void WonGame()
+    // Called by PaddleHitCounter when 5 hits are used up
+    public void EvaluateLevelEnd()
     {
-        Time.timeScale = 0.0f; //Pause game
-        gameState = BreakoutGameState.won;
+        Time.timeScale = 0f;
+
+        bool passed = ScoreManager.SP.CurrentScore >= LevelManager.SP.CurrentLevel.requiredScore;
+
+        if (passed)
+            gameState = LevelManager.SP.IsLastLevel() ? BreakoutGameState.won : BreakoutGameState.levelComplete;
+        else
+            gameState = BreakoutGameState.lost;
     }
 
+
+
+
+
+
+    // Called by Ball when it falls
     public void LostBall()
     {
         int ballsLeft = GameObject.FindGameObjectsWithTag("Player").Length;
-        if(ballsLeft<=1){
-            //Was the last ball..
+        if (ballsLeft <= 1)
             SetGameOver();
-        }
     }
+
+
+
 
     public void SetGameOver()
     {
-        Time.timeScale = 0.0f; //Pause game
+        Time.timeScale = 0f;
         gameState = BreakoutGameState.lost;
     }
 }

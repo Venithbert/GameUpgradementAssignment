@@ -53,10 +53,10 @@
   <Project Path="Purchasing.Common.csproj" />
   <Project Path="Assembly-CSharp-firstpass.csproj" />
   <Project Path="Unity.Services.Core.Threading.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Services.Core.Device.csproj" />
   <Project Path="UnityEditor.XR.LegacyInputHelpers.csproj" />
   <Project Path="UnityEngine.Purchasing.AppleCore.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="UnityEngine.XR.LegacyInputHelpers.csproj" />
   <Project Path="UnityEngine.Purchasing.AppleStub.csproj" />
   <Project Path="UnityEngine.Purchasing.SecurityStub.csproj" />
