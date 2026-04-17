@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public enum BreakoutGameState { playing, won, lost };
 
@@ -8,10 +10,19 @@ public class BreakoutGame : MonoBehaviour
     public static BreakoutGame SP;
 
     public Transform ballPrefab;
+    public Transform blockPrefab;
+    public int rows = 5;
+    public int columns = 8;
+    public int blocksToSpawn = 20;
+    public Vector3 firstBlockPosition = new Vector3(-12f, 1.0f, -18f);
+    public float xSpacing = 3.5f;
+    public float zSpacing = 2.5f;
 
     private int totalBlocks;
     private int blocksHit;
     private BreakoutGameState gameState;
+
+
 
 
     void Awake()
@@ -19,18 +30,81 @@ public class BreakoutGame : MonoBehaviour
         SP = this;
         blocksHit = 0;
         gameState = BreakoutGameState.playing;
-        totalBlocks = GameObject.FindGameObjectsWithTag("Pickup").Length;
         Time.timeScale = 1.0f;
+
+        SpawnBlocks();
         SpawnBall();
     }
+
 
     void SpawnBall()
     {
         Instantiate(ballPrefab, new Vector3(1.81f, 1.0f , 9.75f), Quaternion.identity);
     }
 
-    void OnGUI(){
-    
+
+
+
+
+
+    void SpawnBlocks()
+    {
+        List<Vector3> positions = new List<Vector3>();
+
+        for (int row = 0; row < rows; row++)
+        {
+            for (int column = 0; column < columns; column++)
+            {
+                Vector3 spawnPosition = firstBlockPosition + new Vector3(column * xSpacing, 0, row * zSpacing);
+                positions.Add(spawnPosition);
+            }
+        }
+
+        for (int i = 0; i < positions.Count; i++)
+        {
+            int randomIndex = Random.Range(i, positions.Count);
+            Vector3 temp = positions[i];
+            positions[i] = positions[randomIndex];
+            positions[randomIndex] = temp;
+        }
+
+        totalBlocks = Mathf.Min(blocksToSpawn, positions.Count);
+
+        for (int i = 0; i < totalBlocks; i++)
+        {
+            Instantiate(blockPrefab, positions[i], Quaternion.identity);
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    void OnGUI()
+    {
         GUILayout.Space(10);
         GUILayout.Label("  Hit: " + blocksHit + "/" + totalBlocks);
 
@@ -39,7 +113,7 @@ public class BreakoutGame : MonoBehaviour
             GUILayout.Label("You Lost!");
             if (GUILayout.Button("Try again"))
             {
-                Application.LoadLevel(Application.loadedLevel);
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
         else if (gameState == BreakoutGameState.won)
@@ -47,10 +121,14 @@ public class BreakoutGame : MonoBehaviour
             GUILayout.Label("You won!");
             if (GUILayout.Button("Play again"))
             {
-                Application.LoadLevel(Application.loadedLevel);
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
     }
+
+
+
+
 
     public void HitBlock()
     {
