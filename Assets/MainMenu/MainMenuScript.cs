@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class MainMenuScript : MonoBehaviour {
 
@@ -14,7 +15,7 @@ public class MainMenuScript : MonoBehaviour {
 	void OnGUI () {    
 
         //Detect if we're in the main menu scene
-        if (Application.loadedLevel == 0)
+        if (SceneManager.GetActiveScene().buildIndex == 0)
         {
             MainMenuGUI();
         }
@@ -27,7 +28,7 @@ public class MainMenuScript : MonoBehaviour {
 
     void StartGame(int nr)
     {
-        Application.LoadLevel(nr);
+        SceneManager.LoadScene(nr);
     }
 
     void InGameGUI()
@@ -39,7 +40,7 @@ public class MainMenuScript : MonoBehaviour {
         if (GUILayout.Button("Back to menu"))
         {
             Destroy(gameObject); //Otherwise we'd have two of these..
-            Application.LoadLevel(0);
+            SceneManager.LoadScene(0);
         }
         GUILayout.EndHorizontal();
         GUILayout.EndArea();

@@ -14,6 +14,8 @@ public class BreakoutGame : MonoBehaviour
 {
     public static BreakoutGame SP;
 
+
+    //random block spawn
     public Transform ballPrefab;
     public Transform blockPrefab;
     public int rows = 5;
@@ -22,9 +24,11 @@ public class BreakoutGame : MonoBehaviour
     public Vector3 firstBlockPosition = new Vector3(-12f, 1.0f, -18f);
     public float xSpacing = 3.5f;
     public float zSpacing = 2.5f;
-
     private int totalBlocks;
     private int blocksHit;
+
+
+
     private BreakoutGameState gameState;
 
 
@@ -37,13 +41,16 @@ public class BreakoutGame : MonoBehaviour
         gameState = BreakoutGameState.playing;
         Time.timeScale = 1.0f;
 
-        SpawnBlocks();
-        SpawnBall();
+ 
     }
 
 
 
-
+    void Start()
+    {
+        SpawnBlocks();
+        SpawnBall();
+    }
 
 
 
