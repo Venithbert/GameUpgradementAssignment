@@ -35,6 +35,7 @@
   <Project Path="Unity.AI.Navigation.Updater.csproj" />
   <Project Path="UnityEngine.Purchasing.Codeless.csproj" />
   <Project Path="Unity.Analytics.DataPrivacy.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.2D.Sprite.Editor.csproj" />
   <Project Path="UnityEngine.Advertisements.DevX.Editor.csproj" />
   <Project Path="UnityEngine.Purchasing.WinRTStub.csproj" />
@@ -53,7 +54,6 @@
   <Project Path="Purchasing.Common.csproj" />
   <Project Path="Assembly-CSharp-firstpass.csproj" />
   <Project Path="Unity.Services.Core.Threading.csproj" />
-  <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Unity.Services.Core.Device.csproj" />
   <Project Path="UnityEditor.XR.LegacyInputHelpers.csproj" />
   <Project Path="UnityEngine.Purchasing.AppleCore.csproj" />

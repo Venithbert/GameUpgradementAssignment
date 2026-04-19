@@ -24,6 +24,7 @@ public class LevelManager : MonoBehaviour
     public void RestartFromLevel1()
     {
         CurrentLevelNumber = 1;
+        PlayerInventory.ClearInventory(); // wipe items on full restart
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 

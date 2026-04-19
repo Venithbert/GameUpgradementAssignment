@@ -1,6 +1,11 @@
 using UnityEngine;
-using System.Collections;
 
+/// <summary>
+/// Changes from previous version:
+///   - OnCollisionEnter: fires TriggerBus.BallHitsWall when hitting a "Wall"-tagged object.
+///   - Before destroying: fires TriggerBus.BallDies.
+/// Wall objects in the scene must be tagged "Wall".
+/// </summary>
 public class Ball : MonoBehaviour
 {
     public float maxVelocity = 20;
@@ -13,24 +18,25 @@ public class Ball : MonoBehaviour
 
     void Update()
     {
-        // Clamp speed between min and max
-        float totalVelocity = Vector3.Magnitude(GetComponent<Rigidbody>().linearVelocity);
-        if (totalVelocity > maxVelocity)
-        {
-            float tooHard = totalVelocity / maxVelocity;
-            GetComponent<Rigidbody>().linearVelocity /= tooHard;
-        }
-        else if (totalVelocity < minVelocity)
-        {
-            float tooSlowRate = totalVelocity / minVelocity;
-            GetComponent<Rigidbody>().linearVelocity /= tooSlowRate;
-        }
+        // Clamp speed
+        float v = GetComponent<Rigidbody>().linearVelocity.magnitude;
+        if (v > maxVelocity)
+            GetComponent<Rigidbody>().linearVelocity *= maxVelocity / v;
+        else if (v < minVelocity)
+            GetComponent<Rigidbody>().linearVelocity *= minVelocity / v;
 
-        // Ball fell below the paddle
+        // Ball fell past the paddle
         if (transform.position.z <= -3)
         {
+            TriggerBus.Fire(TriggerType.BallDies);
             BreakoutGame.SP.LostBall();
             Destroy(gameObject);
         }
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Wall"))
+            TriggerBus.Fire(TriggerType.BallHitsWall);
     }
 }

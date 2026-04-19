@@ -1,6 +1,9 @@
 using UnityEngine;
 
-// Requires PaddleHitCounter on the same GameObject.
+/// <summary>
+/// Changes from previous version:
+///   - OnCollisionExit: fires TriggerBus.BallBounces after ball leaves paddle.
+/// </summary>
 public class Paddle : MonoBehaviour
 {
     public float moveSpeed = 15;
@@ -10,27 +13,24 @@ public class Paddle : MonoBehaviour
         float moveInput = Input.GetAxis("Horizontal") * Time.deltaTime * moveSpeed;
         transform.position += new Vector3(moveInput, 0, 0);
 
-        float max = 14.0f;
-        if (transform.position.x <= -max || transform.position.x >= max)
-        {
-            float xPos = Mathf.Clamp(transform.position.x, -max, max);
-            transform.position = new Vector3(xPos, transform.position.y, transform.position.z);
-        }
+        float max  = 14.0f;
+        float xPos = Mathf.Clamp(transform.position.x, -max, max);
+        transform.position = new Vector3(xPos, transform.position.y, transform.position.z);
     }
 
     void OnCollisionExit(Collision collisionInfo)
     {
-        // Only count ball (tagged "Player") bounces, not other objects
         if (!collisionInfo.gameObject.CompareTag("Player")) return;
 
         Rigidbody rigid = collisionInfo.rigidbody;
-        float xDistance = rigid.position.x - transform.position.x;
+        float xDist = rigid.position.x - transform.position.x;
         rigid.linearVelocity = new Vector3(
-            rigid.linearVelocity.x + xDistance / 2,
+            rigid.linearVelocity.x + xDist / 2,
             rigid.linearVelocity.y,
             rigid.linearVelocity.z
         );
 
         PaddleHitCounter.SP.RegisterHit();
+        TriggerBus.Fire(TriggerType.BallBounces);
     }
 }

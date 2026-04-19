@@ -1,26 +1,26 @@
 using UnityEngine;
 
-// Requires BlockHealth and BlockValueDisplay on the same GameObject.
+/// <summary>
+/// No changes from level-system version.
+/// Handles both solid (OnCollisionEnter) and penetrable (OnTriggerEnter) modes.
+/// BlockHealth.RefreshCollider() switches between them automatically.
+/// </summary>
 public class Block : MonoBehaviour
 {
-    // Normal collision: ball bounces (block value >= 2, isTrigger = false)
     void OnCollisionEnter(Collision collision)
     {
-        if (!collision.gameObject.CompareTag("Player")) return;
-        HandleHit();
+        if (collision.gameObject.CompareTag("Player")) HandleHit();
     }
 
-    // Trigger: ball passes through (block value == 1, isTrigger = true)
     void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player")) return;
-        HandleHit();
+        if (other.CompareTag("Player")) HandleHit();
     }
 
     private void HandleHit()
     {
-        BlockHealth health = GetComponent<BlockHealth>();
-        int scoreEarned = health.TakeDamage();
+        BlockHealth health      = GetComponent<BlockHealth>();
+        int         scoreEarned = health.TakeDamage();
         ScoreManager.SP.AddScore(scoreEarned);
 
         if (health.Value <= 0)
