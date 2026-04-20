@@ -22,6 +22,7 @@ public class Block : MonoBehaviour
         BlockHealth health      = GetComponent<BlockHealth>();
         int         scoreEarned = health.TakeDamage();
         ScoreManager.SP.AddScore(scoreEarned);
+        TriggerBus.Fire(TriggerType.BallHitsBlock);
 
         if (health.Value <= 0)
         {

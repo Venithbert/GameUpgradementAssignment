@@ -1,29 +1,80 @@
 using UnityEngine;
+using Object = UnityEngine.Object;
 
-/// <summary>
-/// Changes from previous version:
-///   - OnCollisionEnter: fires TriggerBus.BallHitsWall when hitting a "Wall"-tagged object.
-///   - Before destroying: fires TriggerBus.BallDies.
-/// Wall objects in the scene must be tagged "Wall".
-/// </summary>
 public class Ball : MonoBehaviour
 {
-    public float maxVelocity = 20;
-    public float minVelocity = 15;
+    public float maxVelocity   = 22f;
+    public float minVelocity   = 18f;
+    public bool  launchOnClick = false;
+
+    private Rigidbody _rb;
+    private bool      _launched;
+    private bool      _pendingLaunch;
+    private Transform _paddle;
 
     void Awake()
     {
-        GetComponent<Rigidbody>().linearVelocity = new Vector3(0, 0, -18);
+        _rb = GetComponent<Rigidbody>();
+    }
+
+    void Start()
+    {
+        if (!launchOnClick)
+        {
+            _rb.isKinematic    = false;
+            _rb.linearVelocity = new Vector3(0f, 0f, -minVelocity);
+            _launched          = true;
+            return;
+        }
+
+        Paddle p = Object.FindAnyObjectByType<Paddle>();
+        if (p != null)
+        {
+            _paddle = p.transform;
+            _rb.MovePosition(new Vector3(_paddle.position.x, transform.position.y, transform.position.z));
+        }
+
+        _rb.isKinematic = true;
+    }
+
+    void FixedUpdate()
+    {
+        if (_rb == null) return; // guard: FixedUpdate can run after Destroy(gameObject)
+
+        // Follow paddle while waiting to launch
+        if (!_launched && !_pendingLaunch && _paddle != null)
+        {
+            _rb.MovePosition(new Vector3(_paddle.position.x, _rb.position.y, _rb.position.z));
+            return;
+        }
+
+        // Apply launch velocity the frame after isKinematic is disabled
+        if (_pendingLaunch)
+        {
+            _rb.linearVelocity = new Vector3(0f, 0f, -minVelocity);
+            _pendingLaunch     = false;
+        }
     }
 
     void Update()
     {
-        // Clamp speed
-        float v = GetComponent<Rigidbody>().linearVelocity.magnitude;
+        if (!_launched)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                _rb.isKinematic = false;
+                _pendingLaunch  = true;
+                _launched       = true;
+            }
+            return;
+        }
+
+        // Speed clamp
+        float v = _rb.linearVelocity.magnitude;
         if (v > maxVelocity)
-            GetComponent<Rigidbody>().linearVelocity *= maxVelocity / v;
+            _rb.linearVelocity *= maxVelocity / v;
         else if (v < minVelocity)
-            GetComponent<Rigidbody>().linearVelocity *= minVelocity / v;
+            _rb.linearVelocity *= minVelocity / v;
 
         // Ball fell past the paddle
         if (transform.position.z <= -3)

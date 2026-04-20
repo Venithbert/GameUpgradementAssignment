@@ -9,9 +9,10 @@ public class ItemManager : MonoBehaviour
 {
     public static ItemManager SP;
 
-    private float[] timers          = new float[PlayerInventory.SlotCount];
-    private int     blockPoppedCount = 0;
-    private bool    firstBlockFired  = false;
+    private float[] timers             = new float[PlayerInventory.SlotCount];
+    private int     blockPoppedCount   = 0;
+    private int     ballHitsBlockCount = 0;
+    private bool    firstBlockFired    = false;
 
     // ── Lifecycle ────────────────────────────────────────────────────
 
@@ -26,8 +27,9 @@ public class ItemManager : MonoBehaviour
 
     public void ResetLevelCounters()
     {
-        blockPoppedCount = 0;
-        firstBlockFired  = false;
+        blockPoppedCount   = 0;
+        ballHitsBlockCount = 0;
+        firstBlockFired    = false;
         for (int i = 0; i < timers.Length; i++) timers[i] = 0f;
     }
 
@@ -66,6 +68,14 @@ public class ItemManager : MonoBehaviour
             return;
         }
 
+        // BallHitsBlock drives NthBallHitBlock; don't pass it to items directly.
+        if (type == TriggerType.BallHitsBlock)
+        {
+            ballHitsBlockCount++;
+            HandleBallHitsBlockDerived();
+            return;
+        }
+
         FireMatchingSlots(type);
     }
 
@@ -88,6 +98,16 @@ public class ItemManager : MonoBehaviour
         {
             if (item == null || item.triggerType != TriggerType.NthBlockPopped) continue;
             if (blockPoppedCount % item.triggerThreshold == 0)
+                item.effect.Execute();
+        }
+    }
+
+    private void HandleBallHitsBlockDerived()
+    {
+        foreach (var item in PlayerInventory.SP.GetSlots())
+        {
+            if (item == null || item.triggerType != TriggerType.NthBallHitBlock) continue;
+            if (ballHitsBlockCount % item.triggerThreshold == 0)
                 item.effect.Execute();
         }
     }

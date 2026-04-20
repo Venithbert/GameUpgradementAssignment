@@ -25,7 +25,7 @@ public class ItemDatabase : MonoBehaviour
             },
             new ItemDefinition {
                 itemName    = "Ricochet",
-                description = "Ball hits wall → Instantly pops 1 random block.",
+                description = "Ball hits wall → Instantly halves 1 random block.",
                 triggerType = TriggerType.BallHitsWall,
                 effect      = new EffectPopRandomBlock()
             },
@@ -37,9 +37,9 @@ public class ItemDatabase : MonoBehaviour
             },
             new ItemDefinition {
                 itemName         = "Sky Caller",
-                description      = "Every 5 blocks → A falling object drops and pops 1 block.",
-                triggerType      = TriggerType.NthBlockPopped,
-                triggerThreshold = 5,
+                description      = "Every 3 ball hits → A falling object drops and halves 1 block.",
+                triggerType      = TriggerType.NthBallHitBlock,
+                triggerThreshold = 3,
                 effect           = new EffectSummonFallingObject()
             }
         };

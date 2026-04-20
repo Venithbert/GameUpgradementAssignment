@@ -12,20 +12,20 @@ public class EffectExplodeRandomBlock : ItemEffect
 
     public override void Execute()
     {
-        BlockHealth[] blocks = Object.FindObjectsOfType<BlockHealth>();
+        BlockHealth[] blocks = Object.FindObjectsByType<BlockHealth>(FindObjectsSortMode.None);
         if (blocks.Length == 0) return;
 
         Vector3 epicenter = blocks[Random.Range(0, blocks.Length)].transform.position;
 
-        int killed = 0;
+        int halved = 0;
         foreach (BlockHealth b in blocks)
         {
-            if (killed >= MaxKills) break;
-            if (b == null) continue; // already destroyed this frame
+            if (halved >= MaxKills) break;
+            if (b == null) continue;
             if (Vector3.Distance(b.transform.position, epicenter) <= ExplodeRadius)
             {
-                BreakoutGame.SP.ForceDestroyBlock(b.gameObject);
-                killed++;
+                BreakoutGame.SP.HalveBlock(b);
+                halved++;
             }
         }
     }

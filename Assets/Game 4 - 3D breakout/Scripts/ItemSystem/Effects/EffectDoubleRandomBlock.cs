@@ -6,7 +6,7 @@ public class EffectDoubleRandomBlock : ItemEffect
 {
     public override void Execute()
     {
-        BlockHealth[] blocks = Object.FindObjectsOfType<BlockHealth>();
+        BlockHealth[] blocks = Object.FindObjectsByType<BlockHealth>(FindObjectsSortMode.None);
         if (blocks.Length == 0) return;
 
         BlockHealth target = blocks[Random.Range(0, blocks.Length)];

@@ -17,7 +17,7 @@ public class EffectSummonPenetratingObject : ItemEffect
             return;
         }
 
-        BlockHealth[] blocks = Object.FindObjectsOfType<BlockHealth>();
+        BlockHealth[] blocks = Object.FindObjectsByType<BlockHealth>(FindObjectsSortMode.None);
         if (blocks.Length == 0) return;
 
         Vector3 targetPos = blocks[Random.Range(0, blocks.Length)].transform.position;

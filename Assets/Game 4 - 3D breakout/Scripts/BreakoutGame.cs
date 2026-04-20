@@ -47,16 +47,18 @@ public class BreakoutGame : MonoBehaviour
     void Start()
     {
         SpawnBlocks();
-        SpawnBall();
+        SpawnBall(isInitial: true);
     }
 
 
 
     // ── Spawning ─────────────────────────────────────────────────────
 
-    void SpawnBall()
+    void SpawnBall(bool isInitial = false)
     {
-        Instantiate(ballPrefab, new Vector3(1.81f, 1.0f, 9.75f), Quaternion.identity);
+        var go = Instantiate(ballPrefab, new Vector3(1.81f, 1.0f, -1.3f), Quaternion.identity).gameObject;
+        if (isInitial)
+            go.GetComponent<Ball>().launchOnClick = true;
     }
 
     void SpawnBlocks()
@@ -155,13 +157,26 @@ public class BreakoutGame : MonoBehaviour
     public void LostBall()
     {
         int ballsLeft = GameObject.FindGameObjectsWithTag("Player").Length;
-        if (ballsLeft <= 1) SetGameOver();
+        if (ballsLeft <= 1) EvaluateLevelEnd();
+    }
+
+    public void HalveBlock(BlockHealth h)
+    {
+        if (h == null) return;
+        int score = h.TakeDamage();
+        ScoreManager.SP.AddScore(score);
+        if (h.Value <= 0)
+        {
+            HitBlock();
+            Destroy(h.gameObject);
+        }
     }
 
     public void SetGameOver()
     {
-        Time.timeScale = 0f;
-        gameState      = BreakoutGameState.lost;
+        levelEndEvaluated = true;
+        Time.timeScale    = 0f;
+        gameState         = BreakoutGameState.lost;
     }
 
     public void WonGame()
