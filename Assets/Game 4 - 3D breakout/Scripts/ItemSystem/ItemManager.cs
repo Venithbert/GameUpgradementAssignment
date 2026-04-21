@@ -9,10 +9,11 @@ public class ItemManager : MonoBehaviour
 {
     public static ItemManager SP;
 
-    private float[] timers             = new float[PlayerInventory.SlotCount];
-    private int     blockPoppedCount   = 0;
-    private int     ballHitsBlockCount = 0;
-    private bool    firstBlockFired    = false;
+    private float[] timers              = new float[PlayerInventory.SlotCount];
+    private int     blockPoppedCount    = 0;
+    private int     ballHitsBlockCount  = 0;
+    private bool    firstBlockFired     = false;
+    private bool    firstBallHitFired   = false;
 
     // ── Lifecycle ────────────────────────────────────────────────────
 
@@ -30,7 +31,11 @@ public class ItemManager : MonoBehaviour
         blockPoppedCount   = 0;
         ballHitsBlockCount = 0;
         firstBlockFired    = false;
+        firstBallHitFired  = false;
         for (int i = 0; i < timers.Length; i++) timers[i] = 0f;
+
+        // Restore any slot that was mutated by "Mirror" (ball-launched mutation item)
+        EffectMutateToLeftItem.RestoreMutation();
     }
 
     // ── Timer-based triggers (EveryXSeconds) ─────────────────────────
@@ -68,11 +73,22 @@ public class ItemManager : MonoBehaviour
             return;
         }
 
-        // BallHitsBlock drives NthBallHitBlock; don't pass it to items directly.
+        // BallHitsBlock drives NthBallHitBlock + FirstBlockHalved, AND can be used directly.
         if (type == TriggerType.BallHitsBlock)
         {
             ballHitsBlockCount++;
+
+            // FirstBlockHalved: fires exactly once per level
+            if (!firstBallHitFired)
+            {
+                firstBallHitFired = true;
+                foreach (var item in PlayerInventory.SP.GetSlots())
+                    if (item != null && item.triggerType == TriggerType.FirstBlockHalved)
+                        item.effect.Execute();
+            }
+
             HandleBallHitsBlockDerived();
+            FireMatchingSlots(type); // also allow direct BallHitsBlock listeners
             return;
         }
 

@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 
-public enum BreakoutGameState { playing, levelComplete, itemPicking, won, lost }
+public enum BreakoutGameState { playing, levelComplete, itemPicking, relicPicking, won, lost }
 
 /// <summary>
 /// Changes from level-system version:
@@ -142,11 +142,19 @@ public class BreakoutGame : MonoBehaviour
 
         Time.timeScale = 0f;
 
-        // Every 3rd level: pause and show item picker before advancing
-        if (LevelManager.CurrentLevelNumber % 3 == 0)
+        int lvl = LevelManager.CurrentLevelNumber;
+
+        // Items: every 3rd level (3, 6, 9, 12, ...)
+        if (lvl % 3 == 0)
         {
             gameState = BreakoutGameState.itemPicking;
             ItemPickerUI.SP.Show();
+        }
+        // Relics: starting at level 4, then every 3 levels (4, 7, 10, 13, ...)
+        else if (lvl >= 4 && lvl % 3 == 1)
+        {
+            gameState = BreakoutGameState.relicPicking;
+            RelicPickerUI.SP.Show();
         }
         else
         {
@@ -185,32 +193,30 @@ public class BreakoutGame : MonoBehaviour
         gameState      = BreakoutGameState.won;
     }
 
-    // ── Legacy HUD (replace with UI Toolkit HUDController) ───────────
+    // ── End-of-level dialog (stats HUD lives in HudController) ───────
 
     void OnGUI()
     {
-        GUILayout.Space(10);
-        GUILayout.Label("  Level:      " + LevelManager.CurrentLevelNumber);
-        GUILayout.Label("  Score:      " + ScoreManager.SP.CurrentScore
-                                         + " / " + LevelManager.SP.CurrentLevel.requiredScore);
-        GUILayout.Label("  Hits Left:  " + PaddleHitCounter.SP.HitsRemaining);
-        GUILayout.Label("  Blocks:     " + blocksHit + " / " + totalBlocks);
-
         if (gameState == BreakoutGameState.levelComplete)
         {
-            GUILayout.Label("Level Complete!");
-            if (GUILayout.Button("Next Level")) LevelManager.SP.AdvanceLevel();
+            CenteredDialog("Level Complete!", "Next Level",  LevelManager.SP.AdvanceLevel);
         }
         else if (gameState == BreakoutGameState.won)
         {
-            GUILayout.Label("You Won!");
-            if (GUILayout.Button("Play Again")) LevelManager.SP.RestartFromLevel1();
+            CenteredDialog("You Won!",       "Play Again",  LevelManager.SP.RestartFromLevel1);
         }
         else if (gameState == BreakoutGameState.lost)
         {
-            GUILayout.Label("You Lost!");
-            if (GUILayout.Button("Try Again")) LevelManager.SP.RestartFromLevel1();
+            CenteredDialog("You Lost!",      "Try Again",   LevelManager.SP.RestartFromLevel1);
         }
-        // itemPicking state is rendered entirely by ItemPickerUI
+        // itemPicking / relicPicking are rendered by their picker UIs
+    }
+
+    void CenteredDialog(string title, string button, System.Action onClick)
+    {
+        const float W = 260f, H = 110f;
+        Rect box = new Rect((Screen.width - W) * 0.5f, (Screen.height - H) * 0.5f, W, H);
+        GUI.Box(box, title);
+        if (GUI.Button(new Rect(box.x + 30, box.y + 50, W - 60, 40), button)) onClick();
     }
 }

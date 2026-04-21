@@ -8,7 +8,21 @@ using Object = UnityEngine.Object;
 public class EffectExplodeRandomBlock : ItemEffect
 {
     private const float ExplodeRadius = 7f;
-    private const int   MaxKills      = 8;
+    private const int MaxKills = 8;
+
+    private static GameObject chainReactionVfxPrefab;
+
+    public static void SetVfxPrefab(GameObject prefab)
+    {
+        chainReactionVfxPrefab = prefab;
+    }
+
+    private void SpawnVfx(Vector3 spawnPosition)
+    {
+        if (chainReactionVfxPrefab == null) return;
+
+        Object.Instantiate(chainReactionVfxPrefab, spawnPosition, Quaternion.identity);
+    }
 
     public override void Execute()
     {
@@ -22,9 +36,13 @@ public class EffectExplodeRandomBlock : ItemEffect
         {
             if (halved >= MaxKills) break;
             if (b == null) continue;
+
             if (Vector3.Distance(b.transform.position, epicenter) <= ExplodeRadius)
             {
+                Vector3 spawnPosition = b.transform.position;
+
                 BreakoutGame.SP.HalveBlock(b);
+                SpawnVfx(spawnPosition);
                 halved++;
             }
         }

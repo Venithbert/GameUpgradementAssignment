@@ -8,11 +8,13 @@ public class BlockHealth : MonoBehaviour
 
     public bool IsPenetrable => Value <= 1;
 
-    public void SetValue(int value)
+    public void SetValue(int value, bool playDoubleEffect = false)
     {
         Value = value;
         RefreshCollider();
-        GetComponent<BlockValueDisplay>().UpdateDisplay(Value);
+        var disp = GetComponent<BlockValueDisplay>();
+        disp.UpdateDisplay(Value);
+        if (playDoubleEffect) disp.PlayDoubleEffect();
     }
 
     // Called when ball hits this block.
@@ -21,7 +23,9 @@ public class BlockHealth : MonoBehaviour
     {
         int scoreEarned = Value;
         Value = Value / 2;
-        GetComponent<BlockValueDisplay>().UpdateDisplay(Value);
+        var disp = GetComponent<BlockValueDisplay>();
+        disp.UpdateDisplay(Value);
+        disp.PlayHalveEffect();
         RefreshCollider();
         return scoreEarned;
     }

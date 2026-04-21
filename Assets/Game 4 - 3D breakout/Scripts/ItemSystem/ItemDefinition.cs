@@ -1,17 +1,15 @@
-/// <summary>
-/// Pairs a trigger condition with an effect.
-/// Plain C# class — instances persist across scene reloads in PlayerInventory's static backing array.
-/// </summary>
+using UnityEngine;
+
 public class ItemDefinition
 {
-    public string     itemName;
-    public string     description;
+    public string      itemName;
+    public string      description;
     public TriggerType triggerType;
     public ItemEffect  effect;
 
-    // Used when triggerType == EveryXSeconds
-    public float triggerInterval = 1.5f;
+    public float triggerInterval  = 1.5f;
+    public int   triggerThreshold = 5;
 
-    // Used when triggerType == NthBlockPopped
-    public int triggerThreshold = 5;
+    /// <summary>Optional 3D model shown in HUD and picker. Null = placeholder cube.</summary>
+    public GameObject previewPrefab;
 }

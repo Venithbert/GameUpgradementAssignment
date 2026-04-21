@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh pr create --title 'Game 4 breakout: item system, paddle physics, ball rework, and falling object fixes' --body ' *)",
+      "Bash(where gh *)",
+      "PowerShell($headers = @{ \"Authorization\" = \"token $env:GITHUB_TOKEN\"; \"Accept\" = \"application/vnd.github+json\" }; if \\($env:GITHUB_TOKEN\\) { \"Token found\" } else { \"No GITHUB_TOKEN env var\" })"
+    ]
+  }
+}

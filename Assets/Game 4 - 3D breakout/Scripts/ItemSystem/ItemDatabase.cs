@@ -2,11 +2,18 @@ using UnityEngine;
 
 /// <summary>
 /// Single place to register every item in the game.
-/// To add a new item: add an entry to the allItems array in Awake().
+/// To add a new item: add an entry to allItems in Awake() AND expand itemPreviewPrefabs in the Inspector.
 /// </summary>
 public class ItemDatabase : MonoBehaviour
 {
     public static ItemDatabase SP;
+
+    /// <summary>
+    /// Drag a prefab here for each item (same order as the allItems array below).
+    /// Leave a slot empty → placeholder cube is used for that item.
+    /// </summary>
+    [Header("Preview prefabs — one per item, same order as allItems in Awake")]
+    public GameObject[] itemPreviewPrefabs;
 
     private ItemDefinition[] allItems;
 
@@ -17,11 +24,11 @@ public class ItemDatabase : MonoBehaviour
         allItems = new[]
         {
             new ItemDefinition {
-                itemName       = "Pulse Coil",
-                description    = "Every 1.5s → Doubles a random block's value.",
-                triggerType    = TriggerType.EveryXSeconds,
+                itemName        = "Pulse Coil",
+                description     = "Every 1.5s → Doubles a random block's value.",
+                triggerType     = TriggerType.EveryXSeconds,
                 triggerInterval = 1.5f,
-                effect         = new EffectDoubleRandomBlock()
+                effect          = new EffectDoubleRandomBlock()
             },
             new ItemDefinition {
                 itemName    = "Ricochet",
@@ -41,8 +48,44 @@ public class ItemDatabase : MonoBehaviour
                 triggerType      = TriggerType.NthBallHitBlock,
                 triggerThreshold = 3,
                 effect           = new EffectSummonFallingObject()
+            },
+            new ItemDefinition {
+                itemName    = "Big Bet",
+                description = "First block halved → 50% chance to double the value of EVERY block.",
+                triggerType = TriggerType.FirstBlockHalved,
+                effect      = new EffectDoubleAllBlocksChance()
+            },
+            new ItemDefinition {
+                itemName        = "Envy",
+                description     = "Every 1.5s → The lowest-value block becomes a copy of the highest.",
+                triggerType     = TriggerType.EveryXSeconds,
+                triggerInterval = 1.5f,
+                effect          = new EffectCopyHighestToLowest()
+            },
+            new ItemDefinition {
+                itemName    = "Mirror",
+                description = "Ball launched → Mutates into the item to my LEFT for the rest of the level.",
+                triggerType = TriggerType.BallLaunched,
+                effect      = new EffectMutateToLeftItem()
+            },
+            new ItemDefinition {
+                itemName         = "Storm Ball",
+                description      = "Every 5 block halves → Spawns a bouncy ball from the top (5 bounces, then vanishes).",
+                triggerType      = TriggerType.NthBallHitBlock,
+                triggerThreshold = 5,
+                effect           = new EffectSummonBouncyBall()
+            },
+            new ItemDefinition {
+                itemName    = "Lucky Strike",
+                description = "Block halved → 25% chance to double one random block.",
+                triggerType = TriggerType.BallHitsBlock,
+                effect      = new EffectDoubleRandomBlockChance()
             }
         };
+
+        if (itemPreviewPrefabs != null)
+            for (int i = 0; i < allItems.Length && i < itemPreviewPrefabs.Length; i++)
+                allItems[i].previewPrefab = itemPreviewPrefabs[i];
     }
 
     public ItemDefinition[] GetAllItems() => allItems;

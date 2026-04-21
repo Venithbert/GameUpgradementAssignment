@@ -12,6 +12,7 @@ public class PrefabRegistry : MonoBehaviour
     [Header("Item Effect Prefabs")]
     public GameObject fallingObjectPrefab;
     public GameObject penetratingObjectPrefab;
+    public GameObject bouncyBallPrefab;
 
     void Awake() => SP = this;
 }

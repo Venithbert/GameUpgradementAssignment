@@ -18,12 +18,14 @@ public enum TriggerType
 
     // ---- Ball-hit-based (derived inside ItemManager from raw BallHitsBlock bus events) ----
     NthBallHitBlock,    // fires every N ball-hits-to-blocks; N set via ItemDefinition.triggerThreshold
+    FirstBlockHalved,   // fires exactly once per level on first BallHitsBlock
 
     // ---- Raw bus events (fired by game systems, can also be used directly as item triggers) ----
     BlockPopped,        // every single block destroyed (use NthBlockPopped for items instead)
-    BallHitsBlock,      // every time ball hits a block (TakeDamage called)
+    BallHitsBlock,      // every time ball hits a block (TakeDamage called) — also usable as direct item trigger
     BallHitsWall,
     BallBounces,        // off the paddle
+    BallLaunched,       // fires every time a ball is launched (initial click OR bonus-ball spawn)
     PassLevelGoal,
     BallDies,
 }
