@@ -42,6 +42,17 @@ public class HudController : MonoBehaviour
     [Header("Relic trigger VFX")]
     public GameObject relicTriggerVfxPrefab;
 
+    [Header("Stats position (design-space pixels from bottom-left)")]
+    public float statsX            = 12f;
+    public float statsY            = 14f;
+    public int   statsFontSize     = 22;
+
+    [Header("Stats flash effect")]
+    public Color  scoreFlashColor  = new Color(0.2f, 1f, 0.2f);
+    public Color  hitsFlashColor   = Color.red;
+    public float  flashDuration    = 0.5f;
+    public float  flashPeakScale   = 1.6f;
+
     float SX => Screen.width  / referenceResolution.x;
     float SY => Screen.height / referenceResolution.y;
 
@@ -58,6 +69,16 @@ public class HudController : MonoBehaviour
     private int       dragSource = -1;
     private Texture2D blackTex   = null;
     private float     _spinDelta = 0f;
+
+    // ── Stats flash effect state ───────────────────────────────────────
+    private int       _prevScore    = -1;
+    private int       _prevHits     = -1;
+    private Color     _scoreColor   = Color.white;
+    private Color     _hitsColor    = Color.white;
+    private float     _scoreFontMul = 1f;
+    private float     _hitsFontMul  = 1f;
+    private Coroutine _scoreFlash;
+    private Coroutine _hitsFlash;
 
     // ── Picker preview camera (renders on top of OnGUI overlays) ──────
     static Camera         s_pickerCam;
@@ -212,6 +233,25 @@ public class HudController : MonoBehaviour
     {
         // Per-frame spin delta for DrawPickerPreview
         _spinDelta = previewSpinSpeed * Time.unscaledDeltaTime;
+
+        // ── Stat change detection → trigger flash effects ──────────────
+        int curScore = ScoreManager.SP     != null ? ScoreManager.SP.CurrentScore      : 0;
+        int curHits  = PaddleHitCounter.SP != null ? PaddleHitCounter.SP.HitsRemaining : 0;
+
+        if (_prevScore >= 0 && curScore != _prevScore)
+        {
+            if (_scoreFlash != null) StopCoroutine(_scoreFlash);
+            _scoreFlash = StartCoroutine(FlashStat(scoreFlashColor, flashDuration, flashPeakScale,
+                v => _scoreFontMul = v, c => _scoreColor = c));
+        }
+        if (_prevHits >= 0 && curHits < _prevHits)
+        {
+            if (_hitsFlash != null) StopCoroutine(_hitsFlash);
+            _hitsFlash = StartCoroutine(FlashStat(hitsFlashColor, flashDuration, flashPeakScale,
+                v => _hitsFontMul = v, c => _hitsColor = c));
+        }
+        _prevScore = curScore;
+        _prevHits  = curHits;
 
         // Items — rebuild preview when slot content changes; park offscreen
         var slots = PlayerInventory.SP != null ? PlayerInventory.SP.GetSlots() : null;
@@ -417,18 +457,75 @@ public class HudController : MonoBehaviour
 
     void DrawStats()
     {
-        float W = 240f * SX, H = 22f * SY, PAD = 4f * SY;
-        float x = 12f  * SX;
-        float y = Screen.height - (H * 3 + PAD * 2) - 14f * SY;
+        float baseH = statsFontSize * 1.4f * SY;
+        float PAD   = 6f * SY;
+        float W     = 320f * SX;
 
-        var s     = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(14 * SY), font = hudFont };
+        // Position is fully driven by the Inspector fields (design-space pixels)
+        float totalH = baseH * 3f + PAD * 2f;
+        float x = statsX * SX;
+        float y = Screen.height - totalH - statsY * SY;
+
         int score = ScoreManager.SP     != null ? ScoreManager.SP.CurrentScore               : 0;
         int req   = LevelManager.SP     != null ? LevelManager.SP.CurrentLevel.requiredScore  : 0;
         int hits  = PaddleHitCounter.SP != null ? PaddleHitCounter.SP.HitsRemaining           : 0;
 
-        GUI.Label(new Rect(x, y,                 W, H), "Level: " + LevelManager.CurrentLevelNumber, s);
-        GUI.Label(new Rect(x, y + (H + PAD),     W, H), "Score: " + score + " / " + req, s);
-        GUI.Label(new Rect(x, y + (H + PAD) * 2, W, H), "Hits Left: " + hits, s);
+        // Level — no flash
+        var sLevel = new GUIStyle(GUI.skin.label)
+        {
+            fontSize = Mathf.RoundToInt(statsFontSize * SY),
+            font     = hudFont
+        };
+        GUI.Label(new Rect(x, y, W, baseH), "Level: " + LevelManager.CurrentLevelNumber, sLevel);
+
+        // Score — flash green on gain
+        var sScore = new GUIStyle(GUI.skin.label)
+        {
+            fontSize  = Mathf.RoundToInt(statsFontSize * _scoreFontMul * SY),
+            font      = hudFont,
+            normal    = { textColor = _scoreColor }
+        };
+        float scoreH = baseH * _scoreFontMul;
+        float scoreY = y + baseH + PAD - (scoreH - baseH) * 0.5f;
+        GUI.Label(new Rect(x, scoreY, W, scoreH), "Score: " + score + " / " + req, sScore);
+
+        // Hits Left — flash red on decrease
+        var sHits = new GUIStyle(GUI.skin.label)
+        {
+            fontSize  = Mathf.RoundToInt(statsFontSize * _hitsFontMul * SY),
+            font      = hudFont,
+            normal    = { textColor = _hitsColor }
+        };
+        float hitsH = baseH * _hitsFontMul;
+        float hitsY = y + (baseH + PAD) * 2f - (hitsH - baseH) * 0.5f;
+        GUI.Label(new Rect(x, hitsY, W, hitsH), "Hits Left: " + hits, sHits);
+    }
+
+    System.Collections.IEnumerator FlashStat(
+        Color flash, float duration, float peakScale,
+        System.Action<float> setScale, System.Action<Color> setColor)
+    {
+        float half = duration * 0.5f;
+        float e = 0f;
+        while (e < half)
+        {
+            e += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(e / half);
+            setScale(Mathf.Lerp(1f, peakScale, p));
+            setColor(Color.Lerp(Color.white, flash, p));
+            yield return null;
+        }
+        e = 0f;
+        while (e < half)
+        {
+            e += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(e / half);
+            setScale(Mathf.Lerp(peakScale, 1f, p));
+            setColor(Color.Lerp(flash, Color.white, p));
+            yield return null;
+        }
+        setScale(1f);
+        setColor(Color.white);
     }
 
     GUIStyle CenterLabel(int size) => new GUIStyle(GUI.skin.label)

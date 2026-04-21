@@ -214,9 +214,10 @@ public class BreakoutGame : MonoBehaviour
 
     void CenteredDialog(string title, string button, System.Action onClick)
     {
-        const float W = 260f, H = 110f;
-        Rect box = new Rect((Screen.width - W) * 0.5f, (Screen.height - H) * 0.5f, W, H);
+        float s = Mathf.Min(Screen.width / 1366f, Screen.height / 768f);
+        float w = 260f * s, h = 110f * s;
+        Rect box = new Rect((Screen.width - w) * 0.5f, (Screen.height - h) * 0.5f, w, h);
         GUI.Box(box, title);
-        if (GUI.Button(new Rect(box.x + 30, box.y + 50, W - 60, 40), button)) onClick();
+        if (GUI.Button(new Rect(box.x + 30 * s, box.y + 50 * s, w - 60 * s, 40 * s), button)) onClick();
     }
 }

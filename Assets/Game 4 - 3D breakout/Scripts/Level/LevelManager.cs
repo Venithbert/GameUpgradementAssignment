@@ -29,5 +29,5 @@ public class LevelManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    public bool IsLastLevel() => CurrentLevelNumber >= MaxLevels;
+    public bool IsLastLevel() => false; // infinite levels — no end
 }
