@@ -24,7 +24,7 @@ public class ItemDatabase : MonoBehaviour
         allItems = new[]
         {
             new ItemDefinition {
-                itemName        = "Pulse Coil",
+                itemName        = "Barrel",
                 description     = "Every 1.5s → Doubles a random block's value.",
                 triggerType     = TriggerType.EveryXSeconds,
                 triggerInterval = 1.5f,
@@ -37,7 +37,7 @@ public class ItemDatabase : MonoBehaviour
                 effect      = new EffectPopRandomBlock()
             },
             new ItemDefinition {
-                itemName    = "Chain Reaction",
+                itemName    = "Broom",
                 description = "Ball bounces → A random block explodes (up to 8 nearby).",
                 triggerType = TriggerType.BallBounces,
                 effect      = new EffectExplodeRandomBlock()
@@ -50,7 +50,7 @@ public class ItemDatabase : MonoBehaviour
                 effect           = new EffectSummonFallingObject()
             },
             new ItemDefinition {
-                itemName    = "Big Bet",
+                itemName    = "Sword",
                 description = "First block halved → 50% chance to double the value of EVERY block.",
                 triggerType = TriggerType.FirstBlockHalved,
                 effect      = new EffectDoubleAllBlocksChance()
@@ -63,13 +63,13 @@ public class ItemDatabase : MonoBehaviour
                 effect          = new EffectCopyHighestToLowest()
             },
             new ItemDefinition {
-                itemName    = "Mirror",
+                itemName    = "Pumpkin",
                 description = "Ball launched → Mutates into the item to my LEFT for the rest of the level.",
                 triggerType = TriggerType.BallLaunched,
                 effect      = new EffectMutateToLeftItem()
             },
             new ItemDefinition {
-                itemName         = "Storm Ball",
+                itemName         = "Blue Skull",
                 description      = "Every 5 block halves → Spawns a bouncy ball from the top (5 bounces, then vanishes).",
                 triggerType      = TriggerType.NthBallHitBlock,
                 triggerThreshold = 5,
